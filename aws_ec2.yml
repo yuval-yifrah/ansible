@@ -6,4 +6,5 @@ keyed_groups:
     key: Managed_
 filters:
   instance-state-name: running
-  tag:name: "*yuvaly*"
+  tag:Name: "*yuvaly*"
+  tag:Managed: "True"
