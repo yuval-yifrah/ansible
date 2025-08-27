@@ -1,4 +1,3 @@
-<img width="360" height="320" alt="image" src="https://github.com/user-attachments/assets/7c6a4711-020f-4ba8-8362-19f0caf3ace2" /># ansible
 
 created an ansible playbook that runs on 2 machines and downloads each machine its proper services by the tags.  
 to run it create 3 machines.  
