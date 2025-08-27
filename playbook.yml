@@ -3,16 +3,28 @@
   hosts: all
   gather_facts: false
 
-  pre_tasks:
-    - name: skip unmanaged hosts
-      meta: end_host
-      when: hostvars[aws_ec2_inventory].tags.Managed | default("False") != "True"
+  tasks: 
+  - name: set hostname based on name tag
+    hostname:
+      name: "{{ hostvars[inventory_hostname].tsgs.Name }}"
+  - name: install the service and specific version from the tags 
+    package:
+      name: "{{ hostvars[inventory_hostname].tags.Service }}"
+      state: present
+      version: "{{ hostvars[inventory_hostname].tags.Version | default(omit) }}"
+  - name: set restart
+    name: "reboot"
+    r_day: "{{ hostvars[inventory_hostname].tags.Restart.split()[0] }}"
+    time: "{{ hostvars[inventory_hostname].tags.Restart.split()[2] }}"
+  - name: convert text to time
+    set_fact:
+      restart_hour: {% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[0] | int + (12 if 'pm' in hostvars[inventory_hostname].tags.Restart | lower else 0)) % 24}} {% endif %}
+      restart_min: {% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[1] | int }} {% endif %}
+  - name: cron restart
+    cron:
+      name: "reboot"
+      day: "{{ r_day }}"
+      hour: "{{ restart_hour }}"
+      min: "{{ restart_min }}"
+      job: "/sbin/shoudown -r now"
 
-    - name: skip hosts that doesnt have my name
-      meta: end_host
-      when: "'yuvaly' not in hostvars[aws_ec2_inventory].tags.Name | default('')"
-
-  roles:
-    - role: hostname
-    - role: service
-    - role: restart
