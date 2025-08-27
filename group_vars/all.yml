@@ -1,0 +1,4 @@
+---
+default_service_version: "latest"
+allow_downgrade: true
+restart_command: "/sbin/shutdown -r now"
