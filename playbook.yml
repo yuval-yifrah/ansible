@@ -4,61 +4,6 @@
   gather_facts: false
   become: yes
 
-  tasks: 
-  - name: set hostname based on name tag
-    hostname:
-      name: "{{ hostvars[inventory_hostname].tags.Name }}"
-
-  - name: remove dash from service name
-    set_fact:
-      service_name: >-
-        {% if 'mariadb' in hostvars[inventory_hostname].tags.Service %}
-          mariadb
-        {% else %}
-          {{ hostvars[inventory_hostname].tags.Service }}
-        {% endif %}
-
-  - name: install the services and specific version from the tags
-    ansible.builtin.yum:
-      name: "{{ hostvars[inventory_hostname].tags.Service }}{{ '-' + hostvars[inventory_hostname].tags.Version if hostvars[inventory_hostname].tags.Version is defined else '' }}"
-      state: present
-      allow_downgrade: yes
-
-  - name: enable services
-    ansible.builtin.service:
-      name: "{{ service_name | trim }}"
-      enabled: true
-      state: started
-
-  - name: set restart
-    set_fact:
-      r_day: "{{ hostvars[inventory_hostname].tags.Restart.split()[0] }}"
-      time: "{{ hostvars[inventory_hostname].tags.Restart.split()[2] }}"
-
-  - name: convert text to time
-    set_fact:
-      restart_hour: >-
-        {% if time == 'midnight' %}
-        0
-        {% else %}
-        {{ (time.split(':')[0] | int + (12 if 'pm' in hostvars[inventory_hostname].tags.Restart | lower else 0)) % 24}}
-        {% endif %}
-      restart_min: >-
-        {% if time == 'midnight' %}
-        0 
-        {% else %}
-        {{ time.split(':')[1] | int }} {% endif %}
-
-  - name: Install cronie 
-    ansible.builtin.yum:
-      name: cronie
-      state: present
-
-  - name: cron restart
-    ansible.builtin.cron:
-      name: "reboot"
-      weekday: "{{ r_day[:3] }}"
-      hour: "{{ restart_hour }}"
-      minute: "{{ restart_min }}"
-      job: "/sbin/shoudown -r now"
+  roles:
+    - manage_ec2
 
