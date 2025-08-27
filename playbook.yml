@@ -6,20 +6,20 @@
   tasks: 
   - name: set hostname based on name tag
     hostname:
-      name: "{{ hostvars[inventory_hostname].tsgs.Name }}"
+      name: "{{ hostvars[inventory_hostname].tags.Name }}"
   - name: install the service and specific version from the tags 
     package:
       name: "{{ hostvars[inventory_hostname].tags.Service }}"
       state: present
       version: "{{ hostvars[inventory_hostname].tags.Version | default(omit) }}"
   - name: set restart
-    name: "reboot"
-    r_day: "{{ hostvars[inventory_hostname].tags.Restart.split()[0] }}"
-    time: "{{ hostvars[inventory_hostname].tags.Restart.split()[2] }}"
+    set_fact:
+      r_day: "{{ hostvars[inventory_hostname].tags.Restart.split()[0] }}"
+      time: "{{ hostvars[inventory_hostname].tags.Restart.split()[2] }}"
   - name: convert text to time
     set_fact:
-      restart_hour: {% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[0] | int + (12 if 'pm' in hostvars[inventory_hostname].tags.Restart | lower else 0)) % 24}} {% endif %}
-      restart_min: {% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[1] | int }} {% endif %}
+      restart_hour: "{% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[0] | int + (12 if 'pm' in hostvars[inventory_hostname].tags.Restart | lower else 0)) % 24}} {% endif %}"
+      restart_min: "{% if time == 'midnight' %} 0 {% else %} {{ (time.split(':'[1] | int }} {% endif %}"
   - name: cron restart
     cron:
       name: "reboot"
