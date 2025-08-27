@@ -22,6 +22,7 @@
     ansible.builtin.yum:
       name: "{{ hostvars[inventory_hostname].tags.Service }}{{ '-' + hostvars[inventory_hostname].tags.Version if hostvars[inventory_hostname].tags.Version is defined else '' }}"
       state: present
+      allow_downgrade: yes
 
   - name: enable services
     ansible.builtin.service:
